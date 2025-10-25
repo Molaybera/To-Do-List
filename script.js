@@ -38,29 +38,29 @@ function saveData(){
 
 showdata();
 
-// offline mode
-const CACHE_NAME = 'todo-cache-v1';
-const urlsToCache = [
-  '/',
-  '/index.html',
-  '/style.css',
-  '/script.js'
-];
-
-self.addEventListener('install', e => {
-  e.waitUntil(
-    caches.open(CACHE_NAME).then(cache => cache.addAll(urlsToCache))
-  );
-});
-
-self.addEventListener('fetch', e => {
-  e.respondWith(
-    caches.match(e.request).then(res => res || fetch(e.request))
-  );
-});
 
 // register service worker
 if ('serviceWorker' in navigator) {
   navigator.serviceWorker.register('/service-worker.js')
-    .then(() => console.log('Service Worker Registered'));
+    .then(() => console.log('Service Worker Registered'))
+    .catch(err => console.error('SW registration failed:', err));
 }
+
+//Custom Install Button
+let deferredPrompt;
+
+window.addEventListener('beforeinstallprompt', (e) => {
+  e.preventDefault();
+  deferredPrompt = e;
+  document.getElementById('installBtn').style.display = 'block';
+});
+
+document.getElementById('installBtn').addEventListener('click', () => {
+  if (deferredPrompt) {
+    deferredPrompt.prompt();
+    deferredPrompt.userChoice.then(() => {
+      deferredPrompt = null;
+      document.getElementById('installBtn').style.display = 'none';
+    });
+  }
+});
